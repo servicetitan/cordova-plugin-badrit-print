@@ -56,42 +56,26 @@
         //Set the priner settings
         UIPrintInfo *printInfo = [UIPrintInfo printInfo];
         printInfo.outputType = UIPrintInfoOutputGeneral;
-        if(argc >= 2 && (BOOL)[command.arguments objectAtIndex:1]) {
-            printInfo.orientation = UIPrintInfoOrientationLandscape;
-        }
+
+        UIMarkupTextPrintFormatter *formatter = [[UIMarkupTextPrintFormatter alloc]
+            initWithMarkupText:self.printHTML
+        ];
+
+        formatter.startPage = 0;
+        formatter.contentInsets = UIEdgeInsetsMake(1, 1, 1, 1);
+
+        UIPrintPageRenderer* renderer = [[UIPrintPageRenderer alloc] init];
+        [renderer addPrintFormatter : formatter startingAtPageAtIndex : 0];
+
+        controller.printPageRenderer = renderer;
         controller.printInfo = printInfo;
-        controller.showsPageRange = YES;
-        
-        
-        //Set the base URL to be the www directory.
-        NSString *dbFilePath = [[NSBundle mainBundle] pathForResource:@"www" ofType:nil ];
-        NSURL *baseURL = [NSURL fileURLWithPath:dbFilePath];
-        
-        //Load page into a webview and use its formatter to print the page
-        UIWebView *webViewPrint = [[UIWebView alloc] init];
-        [webViewPrint loadHTMLString:printHTML baseURL:baseURL];
-        
-        //Get formatter for web (note: margin not required - done in web page)
-        UIViewPrintFormatter *viewFormatter = [webViewPrint viewPrintFormatter];
-        if(argc >= 3) {
-            viewFormatter.maximumContentWidth = [[command.arguments objectAtIndex:2] intValue];
-        }
-        if(argc >= 4) {
-            viewFormatter.maximumContentHeight = [[command.arguments objectAtIndex:3] intValue];
-        }
-        NSError *error = nil;
-        controller.printFormatter = [[UIMarkupTextPrintFormatter alloc] initWithMarkupText:self.printHTML];
-        if (error) {
-            NSLog(@"Error while creating the print formatter:\n%@", error);
-            NSLog(@"%@", dbFilePath);
-        }
-        controller.showsPageRange = YES;
-        
-        
+        controller.showsPageRange = NO;
+        controller.showsNumberOfCopies = NO;
+
         void (^completionHandler)(UIPrintInteractionController *, BOOL, NSError *) =
         ^(UIPrintInteractionController *printController, BOOL completed, NSError *error) {
             CDVPluginResult* pluginResult = nil;
-            if (!completed || error) {
+            if (!completed) {
                 pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[NSString stringWithFormat:@"{success: false, available: true, error: \"%@\"}", error.localizedDescription]];
             }
             else{
