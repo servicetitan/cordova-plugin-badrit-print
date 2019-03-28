@@ -1,5 +1,5 @@
 {
-  "name": "com-badrit-printplugin",
+  "name": "cordova-plugin-badrit-print",
   "version": "0.2.0",
   "description": "Cordova Print Plugin",
   "cordova": {
